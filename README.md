@@ -15,6 +15,7 @@ Gio 桌面应用**框架层**工具库，沉淀自 `apps/rfid` 验证过的"事�
 | `runner` | gioui.org | `Run` 窗口事件循环、`WindowAttention` |
 | `logkit` | gio-components | `Buffer` 状态内日志缓冲、`View` 日志视图（Revision 门闩） |
 | `configkit` | 无 gio 依赖 | YAML 配置：defaults 基线 + 文件覆盖 + 首次运行落盘 |
+| `workerkit` | 无 gio 依赖 | `Worker[T]` 单属主请求循环（store/任务 worker 公共骨架） |
 | `apptool` | 无 | `DefaultConfigPath` 等小工具 |
 | `testkit` | 无 | `WaitFor` 轮询断言 |
 
@@ -122,6 +123,19 @@ cfg := DefaultConfig()
 if err := configkit.Load(apptool.DefaultConfigPath("myapp"), &cfg); err != nil {
 	log.Fatal(err)
 }
+```
+
+## workerkit：单属主请求循环
+
+store worker、设备任务 worker 的公共骨架——一个 channel、一个 goroutine、串行处理，
+结果以事件发回状态循环，不在 worker 内改 UI 状态：
+
+```go
+worker := workerkit.Start(c.ctx, 64, func(req StoreRequest) {
+    rows := queryDB(req)          // 无锁访问自己的数据源
+    core.Post(recordsLoaded(rows)) // 结果走事件回流
+})
+worker.Post(loadRequest{page: 1}) // ctx 取消时放弃发送，不会永久阻塞
 ```
 
 ## 完整示范
