@@ -135,7 +135,14 @@ if err := configkit.Load(apptool.DefaultConfigPath("myapp"), &cfg); err != nil {
 主项目 go.mod 使用 replace 指向平级目录，改本库立即生效：
 
 ```go
-require github.com/kuncheng-lab/gio-toolkit v0.x.y
+require github.com/kuncheng-lab/gio-toolkit v0.1.1
 
-replace github.com/kuncheng-lab/gio-toolkit => ../gio-toolkit
+// replace github.com/kuncheng-lab/gio-toolkit => ../gio-toolkit
+```
+
+拉取本库前，团队机器需要将 kuncheng-lab 设为私有域（直连 GitHub，
+绕过国内代理对该域的回源失败问题）：
+
+```sh
+go env -w GOPRIVATE=github.com/kuncheng-lab/*
 ```
