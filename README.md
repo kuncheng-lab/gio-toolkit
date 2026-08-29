@@ -13,6 +13,8 @@ Gio 桌面应用**框架层**工具库，沉淀自 `apps/rfid` 验证过的"事�
 | --- | --- | --- |
 | `statekit` | 无 gio 依赖 | `Core[S]` 泛型状态循环、`Handler[S]`、`Send[T]` |
 | `runner` | gioui.org | `Run` 窗口事件循环、`WindowAttention` |
+| `logkit` | gio-components | `Buffer` 状态内日志缓冲、`View` 日志视图（Revision 门闩） |
+| `configkit` | 无 gio 依赖 | YAML 配置：defaults 基线 + 文件覆盖 + 首次运行落盘 |
 | `apptool` | 无 | `DefaultConfigPath` 等小工具 |
 | `testkit` | 无 | `WaitFor` 轮询断言 |
 
@@ -93,6 +95,33 @@ cfgPath := apptool.DefaultConfigPath("myapp") // 优先 cwd/config.yaml
 testkit.WaitFor(t, 3*time.Second, func() bool {
 	return core.Snapshot().Ready
 })
+```
+
+## logkit 与 configkit
+
+日志：`logkit.Buffer` 作为 UIState 字段在 `applyEvent` 中追加，`logkit.View` 在页面上渲染
+（内部用 Revision 门闩，只在变化时重设编辑器）：
+
+```go
+// UIState 中：
+type State struct {
+	Logs logkit.Buffer
+}
+// applyEvent 中：
+s.Logs.Addf("处理完成 %d", id)
+// CloneState 中：
+clone.Logs = s.Logs.Clone()
+// 页面中：
+logView.Layout(gtx, state.Logs)
+```
+
+配置：代码内 defaults 为基线，YAML 只覆盖出现的字段，文件缺失自动落盘默认值：
+
+```go
+cfg := DefaultConfig()
+if err := configkit.Load(apptool.DefaultConfigPath("myapp"), &cfg); err != nil {
+	log.Fatal(err)
+}
 ```
 
 ## 完整示范

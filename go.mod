@@ -2,7 +2,11 @@ module github.com/kuncheng-lab/gio-toolkit
 
 go 1.27.0
 
-require gioui.org v0.10.1
+require (
+	gioui.org v0.10.1
+	github.com/kuncheng-lab/gio-components v0.1.0
+	gopkg.in/yaml.v3 v3.0.1
+)
 
 require (
 	gioui.org/shader v1.0.8 // indirect
