@@ -140,8 +140,9 @@ require github.com/kuncheng-lab/gio-toolkit v0.1.1
 // replace github.com/kuncheng-lab/gio-toolkit => ../gio-toolkit
 ```
 
-拉取本库前，团队机器需要将 kuncheng-lab 设为私有域（直连 GitHub，
-绕过国内代理对该域的回源失败问题）：
+拉取本库默认走模块代理（goproxy.cn 已验证可用）。若遇到新版本
+刚发布后代理回源短暂 500，可等待代理预热，或一次性将团队域切为
+直连 GitHub：
 
 ```sh
 go env -w GOPRIVATE=github.com/kuncheng-lab/*
