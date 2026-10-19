@@ -71,11 +71,18 @@ lay.Row(gtx, 8,
 | `Height(n, content)` | 定高（Row 里是交叉轴） | — |
 | `Size(w, h, content)` | 两轴固定 | 两轴固定 |
 | `Grow(weight, content)` | 吃剩余 | 内容 |
-| `Fill(content)` | 吃剩余 | 填满 |
+| `Fill(content)` | 吃剩余 | 填满（先改约束再画） |
+| `FillWeight(weight, content)` | 吃剩余 | 只补返回尺寸、不改约束 |
 | `Spacer(weight)` | 吃剩余的空槽位 | — |
+| `FixedSpace(n)` | 固定 n 的空槽位（Row 里占宽、Col 里占高） | — |
 | `Raw(child)` | 原样交给 Gio | 原样交给 Gio |
 
-`0` 表示该轴不固定；声明尺寸超过父级可用空间时会被夹到可用值。
+- `0` 表示该轴不固定；
+- **声明尺寸优先**：`Width/Height/Size` 写多少就是多少，不夹父级可用空间
+  （与迁移前的手写 box 一致；`FixedSpace` 例外，它和原生 `layout.Spacer` 一样按约束夹取）；
+- `Fill` 会把内容的交叉轴约束设成 `Min == Max`（内容按填满排版，适合表格/面板）；
+  `FillWeight` 只把返回尺寸补齐（内容仍按自然尺寸排版，适合里面的居中、编辑器）——
+  两者在“内容自己会居中”时差 1px，选错了会出现细微错位。
 
 ### 排布
 

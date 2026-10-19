@@ -37,7 +37,7 @@ lay.Col(gtx, 12,
 )
 ```
 
-- `Row/Col` + `Width/Height/Size/Grow/Fit/Fill/Spacer` 描述主轴与交叉轴；
+- `Row/Col` + `Width/Height/Size/Grow/Fit/Fill/FillWeight/Spacer/FixedSpace` 描述主轴与交叉轴；
 - `Overlay` 叠放（替代“靠左右 padding 配平让标题居中”）；
 - `Measure` 量文字（返回设计 dp）、`Scale/Space` 支持 1920×1080 设计稿；
 - `Px/Fr/Widths/RowTracks` 让表头与数据行共用一组列宽。

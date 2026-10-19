@@ -159,14 +159,15 @@ func TestSizeFixesBothAxes(t *testing.T) {
 	}
 }
 
-func TestWidthClampedToAvailable(t *testing.T) {
+func TestFixedSizeWinsOverAvailable(t *testing.T) {
 	p := &probe{report: image.Pt(10, 10)}
 	q := &probe{report: image.Pt(10, 10)}
 
 	dims := Row(testCtx(100, 50), 0, Width(300, p.widget()), Fit(q.widget()))
 
-	if p.gotMax.X != 100 {
-		t.Fatalf("定宽 300 在 100 里应被夹到 100，得到 %d", p.gotMax.X)
+	// 声明尺寸优先（与迁移前的手写 box 一致）：子项拿到 300，行本身被父级夹到 100。
+	if p.gotMax.X != 300 {
+		t.Fatalf("定宽 300 应原样交给内容，得到 %d", p.gotMax.X)
 	}
 	if dims.Size.X != 100 {
 		t.Fatalf("行宽 = %d，想要 100", dims.Size.X)
@@ -286,6 +287,55 @@ func TestSpacePushesSiblings(t *testing.T) {
 
 	if dims.Size.X != 300 {
 		t.Fatalf("行宽 = %d，想要 300（Spacer 应吃掉 220）", dims.Size.X)
+	}
+}
+
+func TestFillWeightFillsCrossAxis(t *testing.T) {
+	a := &probe{report: image.Pt(20, 10)}
+	b := &probe{}
+	c := &probe{}
+	d := &probe{}
+
+	dims := Row(testCtx(320, 80), 0,
+		Fit(a.widget()),
+		FillWeight(2, b.widget()),
+		Fit(c.widget()),
+		FillWeight(1, d.widget()),
+	)
+
+	if dims.Size != (image.Pt(320, 80)) {
+		t.Fatalf("尺寸 = %v，想要 320×80（FillWeight 填满交叉轴）", dims.Size)
+	}
+}
+
+func TestFillWeightKeepsContentConstraints(t *testing.T) {
+	p := &probe{report: image.Pt(10, 10)}
+
+	dims := Row(testCtx(320, 80), 0, FillWeight(1, p.widget()))
+
+	// 旧 grow 的语义：只补返回尺寸，不改内容拿到的交叉轴约束。
+	// （主轴由 Gio 的 Flexed 定成 Min==Max，那是 Flex 自己的行为。）
+	if p.gotMin.Y != 0 {
+		t.Fatalf("FillWeight 不该改交叉轴约束：Min = %v", p.gotMin)
+	}
+	if dims.Size != (image.Pt(320, 80)) {
+		t.Fatalf("尺寸 = %v，想要 320×80", dims.Size)
+	}
+}
+
+func TestFixedSpaceUsesDesignUnits(t *testing.T) {
+	a := &probe{report: image.Pt(40, 10)}
+	b := &probe{report: image.Pt(40, 10)}
+
+	// 30 设计 dp 的固定空槽位；在 0.5 倍缩放下等于 15 像素。
+	ctx := testCtx(300, 40)
+	ctx.Metric.PxPerDp = 0.5
+	ctx.Metric.PxPerSp = 0.5
+
+	dims := Row(ctx, 0, Fit(a.widget()), FixedSpace(30), Fit(b.widget()))
+
+	if dims.Size.X != 95 {
+		t.Fatalf("行宽 = %d，想要 95（40 + 15 + 40）", dims.Size.X)
 	}
 }
 
